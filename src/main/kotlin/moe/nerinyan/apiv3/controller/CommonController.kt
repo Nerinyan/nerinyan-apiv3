@@ -18,7 +18,12 @@ class CommonController {
         response.statusCode = HttpStatus.PERMANENT_REDIRECT
         response.headers.location = URI.create("/webjars/swagger-ui/index.html")
         return response.setComplete()
-
     }
+
+    @GetMapping("/healthy")
+    fun healthy(): Mono<String> {
+        return Mono.just("ok")
+    }
+
 
 }
