@@ -44,6 +44,8 @@ dependencies {
 
     implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.8.0'
 
+    implementation 'io.github.oshai:kotlin-logging-jvm:5.1.4'
+
 }
 
 dependencyManagement {

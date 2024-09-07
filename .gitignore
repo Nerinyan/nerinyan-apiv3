@@ -38,3 +38,5 @@ out/
 
 ### Kotlin ###
 .kotlin
+/.env
+/src/main/kotlin/moe/nerinyan/apiv3/service/discord/http-client.private.env.json
