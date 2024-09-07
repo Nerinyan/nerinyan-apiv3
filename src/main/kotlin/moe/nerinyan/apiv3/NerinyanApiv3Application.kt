@@ -1,4 +1,4 @@
-package moe.nerinyan.nerinyanapiv3
+package moe.nerinyan.apiv3
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
