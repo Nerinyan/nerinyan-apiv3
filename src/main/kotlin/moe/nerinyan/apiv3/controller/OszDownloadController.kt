@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import moe.nerinyan.apiv3.dto.OszOptionDTO
 import moe.nerinyan.apiv3.service.osz.OszFileService
-import org.springdoc.api.annotations.ParameterObject
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ZeroCopyHttpOutputMessage
@@ -21,9 +21,10 @@ class OszDownloadController(
     private val oszFileService: OszFileService
 ) {
 
-    @GetMapping("/api/v3/osz/cached")
-    fun oszCached() {
-
+    @Operation(description = "osz cached in server?")
+    @GetMapping("/api/v3/osz/cached{id}")
+    fun oszCached(@ParameterObject params: OszOptionDTO): Mono<Boolean> {
+        return oszFileService.exists(params)
     }
 
     @Operation(description = "osz download")
