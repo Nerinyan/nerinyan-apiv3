@@ -22,7 +22,7 @@ class OszDownloadController(
 ) {
 
     @Operation(description = "osz cached in server?")
-    @GetMapping("/api/v3/osz/cached{id}")
+    @GetMapping("/api/v3/osz/cached/{id}")
     fun oszCached(@ParameterObject params: OszOptionDTO): Mono<Boolean> {
         return oszFileService.exists(params)
     }

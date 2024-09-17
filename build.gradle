@@ -44,6 +44,8 @@ dependencies {
 
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0'
 
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    implementation 'org.opensearch.client:opensearch-rest-high-level-client:2.16.0'
 
     implementation 'io.github.oshai:kotlin-logging-jvm:5.1.4'
 
