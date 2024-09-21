@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import moe.nerinyan.apiv3.dto.OszOptionDTO
 import moe.nerinyan.apiv3.service.bancho.BanchoApiService
-import moe.nerinyan.apiv3.service.osz.OszFileService
+import moe.nerinyan.apiv3.service.bancho.OszFileService
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.http.HttpHeaders
@@ -35,7 +35,7 @@ class OszDownloadController(
     @Operation(description = "osz download")
     @GetMapping(path = ["/api/v3/osz/download/{id}/test"])
     fun oszDownloadTest(@ParameterObject params: OszOptionDTO, response: ServerHttpResponse): ResponseEntity<Flux<DataBuffer>> {
-        val fileFlux: Flux<DataBuffer> = banchoApiService.downloadOsz(params.id)
+        val fileFlux: Flux<DataBuffer> = banchoApiService.downloadOsz(params)
 
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"beatmapset_${params.id}.osz\"")
