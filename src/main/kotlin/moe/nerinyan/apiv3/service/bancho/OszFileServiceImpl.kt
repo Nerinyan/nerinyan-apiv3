@@ -5,6 +5,7 @@ import moe.nerinyan.apiv3.dto.OszOptionDTO
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -26,20 +27,18 @@ class OszFileServiceImpl : OszFileService {
         val path = Paths.get(filePath(option))
         if (!Files.exists(path.parent)) Files.createDirectories(path.parent)
 
-        dataBufferFlux
-            .subscribeOn(Schedulers.boundedElastic())
-            .doOnNext { dataBuffer ->
-                // 파일에 데이터를 씀
-                val readableByteCount = dataBuffer.readableByteCount()
-                val byteArray = ByteArray(readableByteCount)
-                dataBuffer.read(byteArray)
-                Files.write(path, byteArray, StandardOpenOption.CREATE, StandardOpenOption.APPEND)
-            }
-            .doOnComplete {
+        // 파일 쓰기 작업
+        DataBufferUtils.write(dataBufferFlux.map { buffer -> DataBufferUtils.retain(buffer) }, path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+            .subscribeOn(Schedulers.boundedElastic())  // I/O 스레드에서 실행
+            .then()  // 파일 저장이 완료된 후 처리
+            .doOnTerminate {
                 log.info { "File write complete." }
             }
             .doOnError { error ->
                 log.error { "Error writing to file: ${error.message}" }
+            }
+            .doFinally {
+                dataBufferFlux.subscribe { buffer -> DataBufferUtils.release(buffer) }
             }
             .subscribe()
     }
