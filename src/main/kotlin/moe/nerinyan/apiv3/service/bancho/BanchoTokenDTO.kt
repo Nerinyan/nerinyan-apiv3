@@ -1,5 +1,6 @@
 package moe.nerinyan.apiv3.service.bancho
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.jsonwebtoken.Jwts
 import java.time.Instant
@@ -12,42 +13,47 @@ enum class BanchoTokenRenewalType {
 
 class BanchoTokenDTO {
     private val log = KotlinLogging.logger {}
+    
+    @JsonProperty("token_type")
     var tokenType: String = ""
+
+    @JsonProperty("access_token")
     var accessToken: String = ""
+
+    @JsonProperty("refresh_token")
     var refreshToken: String = ""
+
+    @JsonProperty("expires_in")
     var expiresIn: Long = 0
+
     var expiresTimestamp: Long = 0
+        get() {
+            if (field == 0L) {
+                field = Jwts.parser().build().parseUnsecuredClaims(accessToken).payload.expiration.time
+            }
+            return field
+        }
 
     fun validate(): BanchoTokenRenewalType {
         if (tokenType.isBlank()) {
-            log.info { "tokenType is blank." }
             return BanchoTokenRenewalType.LOGIN
         }
         if (accessToken.isBlank()) {
-            log.info { "accessToken is blank." }
             return BanchoTokenRenewalType.LOGIN
         }
         if (refreshToken.isBlank()) {
-            log.info { "refreshToken is blank." }
             return BanchoTokenRenewalType.LOGIN
         }
         if (expiresIn == 0L) {
-            log.info { "expiresIn is 0." }
             return BanchoTokenRenewalType.LOGIN
         }
 
-        if (getExpiresTimestamp() <= Instant.now().minusSeconds(5).toEpochMilli()) {
-            log.info { "expiresTimestamp is less than 5 seconds." }
+        if (expiresTimestamp <= Instant.now().minusSeconds(5).toEpochMilli()) {
             return BanchoTokenRenewalType.REFRESH
         }
 
         return BanchoTokenRenewalType.VALID
     }
 
-    fun getExpiresTimestamp(): Long {
-        if (expiresTimestamp == 0L) {
-            expiresTimestamp = Jwts.parser().build().parseUnsecuredClaims(accessToken).payload.expiration.time
-        }
-        return expiresTimestamp
-    }
+
 }

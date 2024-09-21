@@ -22,12 +22,15 @@ class BanchoAuthService(
     private var token: BanchoTokenDTO = BanchoTokenDTO()
 
     fun getAccessTokenHeader(): Mono<Consumer<HttpHeaders>> {
-        return when (token.validate()) {
+        val a = token.validate()
+        log.info { a }
+        return when (a) {
             BanchoTokenRenewalType.VALID -> Mono.just(Consumer { headers ->
                 headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
             })
 
             BanchoTokenRenewalType.REFRESH -> refresh().flatMap {
+                log.info { "refresh success" }
                 token = it
                 Mono.just(Consumer<HttpHeaders> { headers ->
                     headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
@@ -36,19 +39,27 @@ class BanchoAuthService(
                 log.error { "Failed to refresh." }
                 log.info { "Trying to login." }
                 login().flatMap {
+                    log.info { "Login success" }
                     token = it
                     Mono.just(Consumer<HttpHeaders> { headers ->
                         headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
                     })
-                }.doOnError { e -> throw e }
+                }.doOnError { e ->
+                    log.error { e }
+                    throw e
+                }
             }
 
             BanchoTokenRenewalType.LOGIN -> login().flatMap {
+                log.info { "Login success" }
                 token = it
                 Mono.just(Consumer<HttpHeaders> { headers ->
                     headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
                 })
-            }.doOnError { e -> throw e }
+            }.doOnError { e ->
+                log.error { e }
+                throw e
+            }
         }
 
     }
@@ -68,10 +79,9 @@ class BanchoAuthService(
                 }.build()
             )
             .retrieve()
-            .onStatus({ it.is4xxClientError }) { response -> is4xxServerError(response) }
-            .onStatus({ it.is5xxServerError }) { response -> is5xxServerError(response) }
+            .onStatus({ it.is4xxClientError }) { r -> is4xxServerError(r) }
+            .onStatus({ it.is5xxServerError }) { r -> is5xxServerError(r) }
             .bodyToMono(BanchoTokenDTO::class.java)
-
     }
 
     private fun refresh(): Mono<BanchoTokenDTO> {
@@ -89,28 +99,31 @@ class BanchoAuthService(
                 }.build()
             )
             .retrieve()
-            .onStatus({ it.is4xxClientError }) { response -> is4xxServerError(response) }
-            .onStatus({ it.is5xxServerError }) { response -> is5xxServerError(response) }
+            .onStatus({ it.is4xxClientError }) { r -> is4xxServerError(r) }
+            .onStatus({ it.is5xxServerError }) { r -> is5xxServerError(r) }
             .bodyToMono(BanchoTokenDTO::class.java)
     }
 
-    private fun is4xxServerError(response: ClientResponse): Mono<Nothing> {
+    private fun is4xxServerError(response: ClientResponse): Mono<Throwable> {
         return response.bodyToMono(String::class.java).flatMap { body ->
-            val errorMono: Mono<Nothing> = when (response.statusCode().value()) {
-                400 -> Mono.error(Bancho400Exception(body))
-                401 -> Mono.error(Bancho401Exception(body))
-                403 -> Mono.error(Bancho403Exception(body))
-                404 -> Mono.error(Bancho404Exception(body))
-                429 -> Mono.error(Bancho429Exception(body))
-                else -> Mono.error(Bancho4xxException(body))
+            val exception: Throwable = when (response.statusCode().value()) {
+                400 -> Bancho400Exception(body)
+                401 -> Bancho401Exception(body)
+                403 -> Bancho403Exception(body)
+                404 -> Bancho404Exception(body)
+                429 -> Bancho429Exception(body)
+                else -> Bancho4xxException(body)
             }
-            errorMono
+            log.error { "4xx Error: ${response.statusCode()} - $body" }
+            Mono.error(exception)
         }
     }
 
-    private fun is5xxServerError(response: ClientResponse): Mono<Nothing> {
+    private fun is5xxServerError(response: ClientResponse): Mono<Throwable> {
         return response.bodyToMono(String::class.java).flatMap { body ->
-            Mono.error(Bancho5xxException(body))
+            val exception = Bancho5xxException(body)
+            log.error { "5xx Error: ${response.statusCode()} - $body" }
+            Mono.error(exception)
         }
     }
 }

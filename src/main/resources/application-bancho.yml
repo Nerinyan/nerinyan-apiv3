@@ -1,7 +1,0 @@
-bancho:
-  clientId: "${BANCHO_CLIENTID:5}"
-  clientSecret: "${BANCHO_CLIENTSECRET:FGc9GAtyHzeQDshWP5Ah7dega8hJACAJpQtw6OXk}"
-  scope: "${BANCHO_SCOPE:*}"
-  url: "${BANCHO_URL:https://osu.ppy.sh/oauth/token}"
-  username: "${BANCHO_USERNAME:}"
-  password: "${BANCHO_PASSWORD:}"

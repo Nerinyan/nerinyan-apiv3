@@ -1,6 +1,0 @@
-discord:
-  webhook:
-    startup: "${DISCORD_WEBHOOK_STARTUP:}"
-    shutdown: "${DISCORD_WEBHOOK_SHUTDOWN:}"
-    info: "${DISCORD_WEBHOOK_INFO:}"
-    error: "${DISCORD_WEBHOOK_ERROR:}"
