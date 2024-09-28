@@ -109,16 +109,26 @@ class User {
     //@formatter:on
 }
 
-class BeatmapPack {
+
+class BeatmapPacks {
     //@formatter:off
-    @JsonProperty("author")            var author: String = ""
-    @JsonProperty("date")              var date: ZonedDateTime? = null
-    @JsonProperty("name")              var name: String = ""
-    @JsonProperty("no_diff_reduction") var noDiffReduction: Boolean = false
-    @JsonProperty("ruleset_id")        var rulesetId: Int = 0
-    @JsonProperty("tag")               var tag: String = ""
-    @JsonProperty("url")               var url: String = ""
+    @JsonProperty("author")               var author: String = ""
+    @JsonProperty("date")                 var date: ZonedDateTime? = null
+    @JsonProperty("name")                 var name: String = ""
+    @JsonProperty("no_diff_reduction")    var noDiffReduction: Boolean = false
+    @JsonProperty("ruleset_id")           var rulesetId: Int = 0
+    @JsonProperty("tag")                  var tag: String = ""
+    @JsonProperty("url")                  var url: String = "" // 인증 없이 다운로드 가능한듯
+
+    // 이 둘은 팩 단일 조회시에만 존재
+    @JsonProperty("beatmapsets")          var beatmapsets: MutableList<BeatmapSet> = mutableListOf()
+    @JsonProperty("user_completion_data") var userCompletionData: UserCompletionData = UserCompletionData()
     //@formatter:on
+}
+
+class UserCompletionData {
+    @JsonProperty("completed") var completed: Boolean = false
+    @JsonProperty("beatmapset_ids") var beatmapsetIds: MutableList<Int> = mutableListOf()
 }
 
 class NominationsSummary {
