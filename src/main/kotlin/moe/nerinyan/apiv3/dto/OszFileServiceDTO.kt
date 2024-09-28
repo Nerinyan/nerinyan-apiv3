@@ -1,5 +1,6 @@
 package moe.nerinyan.apiv3.dto
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -8,7 +9,6 @@ class OszOptionDTO {
 
     @Schema(description = "beatmap set id")
     var id: Long = 0
-
 
     @Schema(description = "remove background")
     @JsonProperty(value = "nb")
@@ -26,4 +26,13 @@ class OszOptionDTO {
     @JsonProperty(value = "nv")
     var noVideo: Boolean = false
 
+    // 내부 처리용
+    @JsonIgnore
+    var source: OszSource = OszSource.BANCHO
+
+}
+
+enum class OszSource {
+    BANCHO,
+    BITCONNECT,
 }

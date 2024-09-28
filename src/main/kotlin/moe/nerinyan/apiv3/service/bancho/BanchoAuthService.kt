@@ -25,25 +25,18 @@ class BanchoAuthService(
         val a = token.validate()
         log.info { a }
         return when (a) {
-            BanchoTokenRenewalType.VALID -> Mono.just(Consumer { headers ->
-                headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
-            })
+            BanchoTokenRenewalType.VALID -> Mono.just(Consumer { headers -> setAuthHeader(headers) })
 
             BanchoTokenRenewalType.REFRESH -> refresh().flatMap {
                 log.info { "refresh success" }
                 token = it
-                Mono.just(Consumer<HttpHeaders> { headers ->
-                    headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
-                })
+                Mono.just(Consumer<HttpHeaders> { headers -> setAuthHeader(headers) })
             }.onErrorResume {
-                log.error { "Failed to refresh." }
-                log.info { "Trying to login." }
+                log.error { "Failed to refresh. Trying to login." }
                 login().flatMap {
                     log.info { "Login success" }
                     token = it
-                    Mono.just(Consumer<HttpHeaders> { headers ->
-                        headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
-                    })
+                    Mono.just(Consumer<HttpHeaders> { headers -> setAuthHeader(headers) })
                 }.doOnError { e ->
                     log.error { e }
                     throw e
@@ -53,9 +46,7 @@ class BanchoAuthService(
             BanchoTokenRenewalType.LOGIN -> login().flatMap {
                 log.info { "Login success" }
                 token = it
-                Mono.just(Consumer<HttpHeaders> { headers ->
-                    headers.set("Authorization", "${token.tokenType} ${token.accessToken}")
-                })
+                Mono.just(Consumer<HttpHeaders> { headers -> setAuthHeader(headers) })
             }.doOnError { e ->
                 log.error { e }
                 throw e
@@ -64,18 +55,21 @@ class BanchoAuthService(
 
     }
 
+    private fun setAuthHeader(headers: HttpHeaders) {
+        headers.set(HttpHeaders.AUTHORIZATION, "${token.tokenType} ${token.accessToken}")
+    }
 
     private fun login(): Mono<BanchoTokenDTO> {
-        return webClient.post().uri(banchoProperties.url)
+        return webClient.post().uri(banchoProperties.auth.url)
             .header(CONTENT_TYPE, MULTIPART_FORM_DATA_VALUE)
             .bodyValue(
                 MultipartBodyBuilder().apply {
-                    part("client_id", banchoProperties.clientId)
-                    part("client_secret", banchoProperties.clientSecret)
-                    part("scope", banchoProperties.scope)
+                    part("client_id", banchoProperties.auth.clientId)
+                    part("client_secret", banchoProperties.auth.clientSecret)
+                    part("scope", banchoProperties.auth.scope)
                     part("grant_type", "password")
-                    part("username", banchoProperties.username)
-                    part("password", banchoProperties.password)
+                    part("username", banchoProperties.auth.username)
+                    part("password", banchoProperties.auth.password)
                 }.build()
             )
             .retrieve()
@@ -85,15 +79,15 @@ class BanchoAuthService(
     }
 
     private fun refresh(): Mono<BanchoTokenDTO> {
-        return webClient.post().uri(banchoProperties.url)
+        return webClient.post().uri(banchoProperties.auth.url)
             .header(CONTENT_TYPE, MULTIPART_FORM_DATA_VALUE)
             // refresh 는 auth 토큰이 필요함
             .header("Authorization", "${token.tokenType} ${token.accessToken}")
             .bodyValue(
                 MultipartBodyBuilder().apply {
-                    part("client_id", banchoProperties.clientId)
-                    part("client_secret", banchoProperties.clientSecret)
-                    part("scope", banchoProperties.scope)
+                    part("client_id", banchoProperties.auth.clientId)
+                    part("client_secret", banchoProperties.auth.clientSecret)
+                    part("scope", banchoProperties.auth.scope)
                     part("grant_type", "refresh_token")
                     part("refresh_token", token.refreshToken)
                 }.build()

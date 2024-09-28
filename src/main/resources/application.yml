@@ -10,9 +10,15 @@ discord:
     error: "${DISCORD_WEBHOOK_ERROR:}"
 
 bancho:
-  clientId: "${BANCHO_CLIENTID:5}"
-  clientSecret: "${BANCHO_CLIENTSECRET:FGc9GAtyHzeQDshWP5Ah7dega8hJACAJpQtw6OXk}"
-  scope: "${BANCHO_SCOPE:*}"
-  url: "${BANCHO_URL:https://osu.ppy.sh/oauth/token}"
-  username: "${BANCHO_USERNAME:}"
-  password: "${BANCHO_PASSWORD:}"
+  auth:
+    clientId: "${BANCHO_AUTH_CLIENTID:5}"
+    clientSecret: "${BANCHO_AUTH_CLIENTSECRET:FGc9GAtyHzeQDshWP5Ah7dega8hJACAJpQtw6OXk}"
+    scope: "${BANCHO_AUTH_SCOPE:*}"
+    url: "${BANCHO_AUTH_URL:https://osu.ppy.sh/oauth/token}"
+    username: "${BANCHO_AUTH_USERNAME:}"
+    password: "${BANCHO_AUTH_PASSWORD:}"
+
+nerinyan:
+  dir-policy:
+    max-size: "${NERINYAN_DIR_POLICY_MAXSIZE:100TB}"
+    osz-dir: "${NERINYAN_DIR_POLICY_BASEDIR:./beatmaps}"

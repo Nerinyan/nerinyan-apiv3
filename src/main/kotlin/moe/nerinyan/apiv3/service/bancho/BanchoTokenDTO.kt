@@ -13,7 +13,7 @@ enum class BanchoTokenRenewalType {
 
 class BanchoTokenDTO {
     private val log = KotlinLogging.logger {}
-    
+
     @JsonProperty("token_type")
     var tokenType: String = ""
 
@@ -29,6 +29,7 @@ class BanchoTokenDTO {
     var expiresTimestamp: Long = 0
         get() {
             if (field == 0L) {
+                // TODO 토큰 파싱부분 수정해야함
                 field = Jwts.parser().build().parseUnsecuredClaims(accessToken).payload.expiration.time
             }
             return field
